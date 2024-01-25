@@ -1,0 +1,42 @@
+## Registers
+
+# | Register | Usage     | Type    | Description                                      |
+# | -------- | --------- | ------- | ------------------------------------------------ |
+# | `$a0`    | input     | integer | year to check                                    |
+# | `$v0`    | output    | boolean | input is leap year (`0` = `false`, `1` = `true`) |
+# | `$t0-9`  | temporary | any     | used for temporary storage                       |
+
+.globl is_leap_year
+
+is_leap_year:
+	move 	$t0, $a0
+
+        # load the comparison values into temporary registers
+        li	$t5, 4  # 4 for the first comparison
+        li	$t6, 100 # and so on...
+        li	$t7, 400
+        
+        # Divisible by 4
+        div	$t0, $t5        # divide the input by 4
+        mfhi	$t1		# move the content of the hi register (which is the remainder of the division by design) into t1
+        bnez    $t1, false	# if the remainder is not equal to zero than we know for sure that year cannot be leap year
+        
+        # Divisible by 100
+        div 	$t0, $t6	# now divide input by 100
+        mfhi	$t1		# same as above
+	bnez  	$t1, true	# if not divisitble by 100, it is a leap year
+	
+        div 	$t0, $t7	# if it's divisible by 100 proceed to check if it is divisible by 400
+        mfhi 	$t1
+        beqz	$t1, true	# if it is than we have a leap year
+        b 	false		# otherwise, return false
+
+        
+true:   # load immediate value of one in v0 if true
+        li $v0, 1
+        jr $ra
+        
+false:  # load immediate value of zero in v0 if false
+        li $v0, 0
+        jr $ra
+
